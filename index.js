@@ -49,6 +49,15 @@ const productsSchema = new mongoose.Schema({
 
 })
 
+const usersSchema = new mongoose.Schema({
+    name: String,
+    userImage: String,
+    email: String,
+    role: String
+})
+
+const Users = mongoose.model('users', usersSchema)
+
 const Product = mongoose.model("products", productsSchema)
 app.use('/uploads', express.static('uploads'));
 const storage = multer.diskStorage({
@@ -125,6 +134,30 @@ app.get('/product/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+app.post('/users', async (req, res) => {
+    const { email, name, userImage, role } = req.body
+
+    try {
+        const savedUser = await Users.create({ name, email, userImage, role });
+        res.json({ message: 'user saved Successfully', savedUser });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+app.get('/users', async (req, res) => {
+    const users = await Users.find()
+    res.json(users)
+})
+app.get('/user/:email', async (req, res) => {
+    const email = req.params
+    try {
+        const user = await Users.findOne(email)
+        res.json(user)
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
