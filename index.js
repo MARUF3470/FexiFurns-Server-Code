@@ -48,7 +48,10 @@ const productsSchema = new mongoose.Schema({
     }
 
 })
-
+const cartSchema = new mongoose.Schema({
+    id: String,
+    email: String
+})
 const usersSchema = new mongoose.Schema({
     name: String,
     userImage: String,
@@ -57,6 +60,7 @@ const usersSchema = new mongoose.Schema({
 })
 
 const Users = mongoose.model('users', usersSchema)
+const Cart = mongoose.model('carts', cartSchema)
 
 const Product = mongoose.model("products", productsSchema)
 app.use('/uploads', express.static('uploads'));
@@ -69,15 +73,7 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage: storage })
-// const imageSchema = new mongoose.Schema({
-//     images: [
-//         {
-//             filename: String,
-//             path: String,
-//         }
-//     ]
-// });
-// const Image = mongoose.model('Image', imageSchema);
+
 
 app.post('/products', upload.array('images'), async (req, res) => {
 
@@ -134,10 +130,57 @@ app.get('/product/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+app.delete('/product/:id', async (req, res) => {
+    const id = req.params.id
+    const query = { _id: ObjectId(id) }
+    try {
+        const product = await Product.deleteOne(query)
+        res.send(product)
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+app.patch('/product/:id', async (req, res) => {
+    const id = req.params.id
+    const newQuantity = req.body.quantity
+    try {
+        const result = await Product.findOneAndUpdate({ _id: ObjectId(id) }, { $set: { quantity: newQuantity } }, { new: true })
+        res.send(result)
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+app.post('/cartItems', async (req, res) => {
+    const cartData = req.body
+    try {
+        const cartItem = await Cart.create(cartData);
+        res.json({ message: 'item added to cart', cartItem })
+    }
+    catch (err) {
+        res.status(500).json({ err: 'Internal server error' });
+    }
 
+})
+app.get('/cartItems/:email', async (req, res) => {
+    const email = req.params
+    const cart = await Cart.find(email)
+    res.json(cart)
+})
+app.delete('/cartItem/:id', async (req, res) => {
+    const id = req.params.id
+    const query = { id: ObjectId(id) }
+    try {
+        const cart = await Cart.deleteOne(query)
+        res.json(cart)
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+
+    }
+})
 app.post('/users', async (req, res) => {
     const { email, name, userImage, role } = req.body
-
     try {
         const savedUser = await Users.create({ name, email, userImage, role });
         res.json({ message: 'user saved Successfully', savedUser });
@@ -151,6 +194,7 @@ app.get('/users', async (req, res) => {
 })
 app.get('/user/:email', async (req, res) => {
     const email = req.params
+
     try {
         const user = await Users.findOne(email)
         res.json(user)
@@ -158,8 +202,14 @@ app.get('/user/:email', async (req, res) => {
         console.log(error);
     }
 })
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
+app.delete('/user/:email', async (req, res) => {
+    const email = req.params
+    try {
+        const user = await Users.deleteOne(email)
+        res.json(user)
+    } catch (error) {
+        console.log(error);
+    }
 })
+
 
