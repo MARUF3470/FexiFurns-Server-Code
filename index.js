@@ -13,7 +13,7 @@ app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`)
     await connectDB()
 })
-const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.x5paqdg.mongodb.net/test?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.x5paqdg.mongodb.net/FexiFurns?retryWrites=true&w=majority`;
 const connectDB = async () => {
     try {
         await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
