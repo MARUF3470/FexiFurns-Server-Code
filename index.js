@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000
 
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`)
-    await connectDB()
+    connectDB()
 })
 const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.x5paqdg.mongodb.net/?retryWrites=true&w=majority`;
 const connectDB = async () => {
