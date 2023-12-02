@@ -1,8 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const multer = require('multer'); // nodejs pakage for storing images
 const mongoose = require('mongoose'); // for connecting mongoose
 var cors = require('cors'); // to sent the data from frontent and get the data in frontent 
-require('dotenv').config()
 const { ObjectId } = require('mongodb');
 const app = express()
 app.use(cors())
@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000
 
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`)
-    connectDB()
+    await connectDB()
 })
 const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.x5paqdg.mongodb.net/?retryWrites=true&w=majority`;
 const connectDB = async () => {
@@ -63,6 +63,11 @@ const Users = mongoose.model('users', usersSchema)
 const Cart = mongoose.model('carts', cartSchema)
 
 const Product = mongoose.model("products", productsSchema)
+
+app.get('/', async (req, res) => {
+    res.json('Hello')
+})
+
 app.use('/uploads', express.static('uploads'));
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
