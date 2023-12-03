@@ -141,15 +141,15 @@ app.delete('/product/:id', async (req, res) => {
     const query = { _id: ObjectId(id) }
     try {
 
-        // Retrieve the product to get the associated images
-        const product = await Product.findOne(query);
+        // // Retrieve the product to get the associated images
+        // const product = await Product.findOne(query);
 
-        // Delete the images from the 'uploads' folder
-        if (product && product.images) {
-            product.images.forEach((image) => {
-                fs.unlinkSync(image.path);
-            });
-        }
+        // // Delete the images from the 'uploads' folder
+        // if (product && product?.images) {
+        //     product.images.forEach((image) => {
+        //         fs.unlinkSync(image.path);
+        //     });
+        // }
         const result = await Product.deleteOne(query)
         res.send(result)
     } catch (error) {
