@@ -1,5 +1,6 @@
 require('dotenv').config()
 const express = require('express')
+const fs = require('fs');
 const multer = require('multer'); // nodejs pakage for storing images
 const mongoose = require('mongoose'); // for connecting mongoose
 var cors = require('cors'); // to sent the data from frontent and get the data in frontent 
@@ -139,8 +140,18 @@ app.delete('/product/:id', async (req, res) => {
     const id = req.params.id
     const query = { _id: ObjectId(id) }
     try {
-        const product = await Product.deleteOne(query)
-        res.send(product)
+
+        // Retrieve the product to get the associated images
+        const product = await Product.findOne(query);
+
+        // Delete the images from the 'uploads' folder
+        if (product && product.images) {
+            product.images.forEach((image) => {
+                fs.unlinkSync(image.path);
+            });
+        }
+        const result = await Product.deleteOne(query)
+        res.send(result)
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).json({ error: 'Internal server error' });
