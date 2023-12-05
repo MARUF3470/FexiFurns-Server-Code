@@ -6,14 +6,7 @@ const mongoose = require('mongoose'); // for connecting mongoose
 var cors = require('cors'); // to sent the data from frontent and get the data in frontent 
 const { ObjectId } = require('mongodb');
 const app = express()
-const corsOptions = {
-    origin: 'https://fexi-furns.web.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
+app.use(cors())
 app.use(express.json()); // to store json data
 const port = process.env.PORT || 5000
 
