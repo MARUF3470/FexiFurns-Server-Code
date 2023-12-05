@@ -1,4 +1,3 @@
-require('dotenv').config()
 const express = require('express')
 const fs = require('fs');
 const multer = require('multer'); // nodejs pakage for storing images
@@ -6,12 +5,13 @@ const mongoose = require('mongoose'); // for connecting mongoose
 var cors = require('cors'); // to sent the data from frontent and get the data in frontent 
 const { ObjectId } = require('mongodb');
 const app = express()
-app.use(cors())
 app.use(express.json()); // to store json data
+require('dotenv').config()
+app.use(cors())
 const port = process.env.PORT || 5000
 
 // intregating Stripe
-const stripe = require("stripe")(process.env.STRIPE_SECRATE_KEY)
+const stripe = require("stripe")(`${process.env.STRIPE_SECRATE_KEY}`)
 
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`)
