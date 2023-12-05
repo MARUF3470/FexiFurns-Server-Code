@@ -10,6 +10,9 @@ app.use(cors())
 app.use(express.json()); // to store json data
 const port = process.env.PORT || 5000
 
+// intregating Stripe
+const stripe = require("stripe")(process.env.STRIPE_SECRATE_KEY)
+
 app.listen(port, async () => {
     console.log(`Example app listening on port ${port}`)
     await connectDB()
@@ -53,6 +56,15 @@ const cartSchema = new mongoose.Schema({
     id: String,
     email: String
 })
+const paymentSchema = new mongoose.Schema({
+    id: String,
+    customerEmail: String,
+    productId: String,
+    paidAmount: Number,
+    OrderQuantity: Number,
+    date: String,
+    orderStatus: String
+})
 const usersSchema = new mongoose.Schema({
     name: String,
     userImage: String,
@@ -62,7 +74,7 @@ const usersSchema = new mongoose.Schema({
 
 const Users = mongoose.model('users', usersSchema)
 const Cart = mongoose.model('carts', cartSchema)
-
+const Payment = mongoose.model('payments', paymentSchema)
 const Product = mongoose.model("products", productsSchema)
 
 app.get('/', async (req, res) => {
@@ -188,15 +200,61 @@ app.get('/cartItems/:email', async (req, res) => {
     const cart = await Cart.find(email)
     res.json(cart)
 })
+
+// creating stripe payment intend
+app.post("/create-payment-intent", async (req, res) => {
+    const { price } = req.body;
+
+    // it calculte the price in cents
+    const amount = price * 100
+    console.log(price, amount);
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+        // automatic_payment_methods: {
+        //     enabled: true,
+        // },
+        payment_method_types: ["card"],
+    });
+
+    res.send({
+        clientSecret: paymentIntent.client_secret,
+    });
+});
+
+// saving customer payment details
+app.post('/payments', async (req, res) => {
+    const { id,
+        customerEmail,
+        productId,
+        paidAmount,
+        OrderQuantity,
+        date,
+        orderStatus
+    } = req.body
+    try {
+        const payments = await Payment.create({ id, customerEmail, OrderQuantity, paidAmount, productId, date, orderStatus })
+        res.json({ message: 'payment details saved Successfully', payments });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
+
 app.delete('/cartItem/:id', async (req, res) => {
     const id = req.params.id
-    const query = { id: ObjectId(id) }
+    const email = req.query.email; // Retrieve the email parameter from the query string
+    console.log(id, email);
+    if (!email) {
+        return res.status(400).json({ error: 'Email parameter is missing.' });
+    }
+    const query = { id, email };
     try {
         const cart = await Cart.deleteOne(query)
         res.json(cart)
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
-
     }
 })
 app.post('/users', async (req, res) => {
