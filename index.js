@@ -242,6 +242,16 @@ app.post('/payments', async (req, res) => {
     }
 })
 
+app.get('/paidProducts', async (req, res) => {
+    const products = await Payment.find()
+    res.json(products)
+})
+app.get('/paidProducts/:email', async (req, res) => {
+    const email = req.params.email
+    const products = await Payment.find({ customerEmail: email })
+    res.json(products)
+})
+
 app.delete('/cartItem/:id', async (req, res) => {
     const id = req.params.id
     const email = req.query.email; // Retrieve the email parameter from the query string
